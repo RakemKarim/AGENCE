@@ -12,14 +12,32 @@ class Vehicules{
         $this->prixParJour = $prixParJour;
         $this->immatriculation = $immatriculation;
         $this->marque = $marque;
-        $this->$disponibilite=true;
+        $this->type = $type;
+        $this->disponibilite = true; // Par défaut, le véhicule est disponible    }
+    
     }
-    public function getId() {
-        return $this->id;
-    }
-  
  
-    public function getStatut() {
+    public function getMarque(): string {
+        return $this->marque;
+    }
+
+    public function getImmatriculation(): int {
+        return $this->immatriculation;
+    }
+
+    public function getType(): string {
+        return $this->type;
+    }
+
+    public function getPrixParJour(): float {
+        return $this->prixParJour;
+    }
+
+    public function getDisponibilite(): bool {
+        return $this->disponibilite;
+    }
+
+    public function getStatut(): string {
         return $this->disponibilite ? 'Disponible' : 'Indisponible';
     }
 
