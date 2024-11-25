@@ -21,16 +21,16 @@
                         <a href="index.php" class="nav-link text-white">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="vehicles.php" class="nav-link text-white">Véhicules</a>
+                        <a href="classes/ehiculs.php" class="nav-link text-white">Véhicules</a>
                     </li>
                     <li class="nav-item">
-                        <a href="reservations.php" class="nav-link text-white">Réservations</a>
+                        <a href="classes/reservations.php" class="nav-link text-white">Réservations</a>
                     </li>
                     <li class="nav-item">
-                        <a href="contact.php" class="nav-link text-white">Contact</a>
+                        <a href="classes/contact.php" class="nav-link text-white">Contact</a>
                     </li>
                     <li class="nav-item">
-                        <a href="login.php" class="nav-link text-white">Connexion</a>
+                        <a href="vue/connexion.php" class="nav-link text-white">Connexion</a>
                     </li>
                 </ul>
             </nav>

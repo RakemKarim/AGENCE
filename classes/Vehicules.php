@@ -5,7 +5,7 @@ class Vehicules{
     private int  $immatriculation;
     private string  $type;
     private float  $prixParJour;
-    private boolean $disponibilite ;
+    private bool $disponibilite ;
 
     public function __construct(string $marque, int $immatriculation, string  $type,float  $prixParJour){
         $this->marque = $marque;
@@ -17,9 +17,7 @@ class Vehicules{
     public function getId() {
         return $this->id;
     }
-    public function getId() {
-        return $this->id;
-    }
+  
  
     public function getStatut() {
         return $this->disponibilite ? 'Disponible' : 'Indisponible';
