@@ -35,8 +35,9 @@
                     </td>
                     <td>
                     <form action="reservation.php" method="get">
-                            <button type="submit" class="btn-reserver">Réserver</button>
-                        </form>
+                     <input type="hidden" name="immatriculation" value="<?= htmlspecialchars($vehicule->getImmatriculation()) ?>">
+                    <button type="submit" class="btn-reserver">Réserver</button>
+                     </form>
                 
                     </td>
                     

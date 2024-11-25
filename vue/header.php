@@ -23,9 +23,7 @@
                     <li class="nav-item">
                         <a href="vue/vehicules.php" class="nav-link text-white">Véhicules</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="vue/reservation.php" class="nav-link text-white">Réservations</a>
-                    </li>
+                  
                     <li class="nav-item">
                         <a href="classes/contact.php" class="nav-link text-white">Contact</a>
                     </li>
