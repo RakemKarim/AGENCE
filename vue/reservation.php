@@ -1,23 +1,25 @@
 <?php
-// Inclure la classe Vehicules et GestionVehicules
-include_once "../classes/Vehicules.php";
-include_once "../classes/GestionVehicules.php";
+// Inclure la connexion à la base de données
+include_once "controller/db.php";
 
-// Récupérer l'immatriculation de la requête GET
+// Récupérer l'immatriculation depuis la requête GET
 $immatriculation = isset($_GET['immatriculation']) ? $_GET['immatriculation'] : null;
 
-// Instancier la gestion des véhicules
-$gestionVehicules = new GestionVehicules();
+if (!$immatriculation) {
+    die("Immatriculation manquante.");
+}
 
-// Récupérer le véhicule correspondant à l'immatriculation
-$vehicule = $gestionVehicules->getVehicule($immatriculation);
+// Récupérer les informations du véhicule correspondant dans la base de données
+try {
+    $stmt = $pdo->prepare("SELECT * FROM vehicules WHERE immatriculation = ?");
+    $stmt->execute([$immatriculation]);
+    $vehicule = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Vérifier si le véhicule existe avant de l'ajouter
-if ($vehicule !== null) {
-    $gestionVehicules->ajouterVehicule($vehicule);
-} else {
-    // Gérer le cas où le véhicule n'a pas été trouvé
-    echo "<p>Véhicule non trouvé.</p>";
+    if (!$vehicule) {
+        die("Véhicule non trouvé.");
+    }
+} catch (PDOException $e) {
+    die("Erreur lors de la récupération du véhicule : " . $e->getMessage());
 }
 ?>
 
@@ -31,6 +33,8 @@ if ($vehicule !== null) {
         /* Style pour la page de réservation */
         .container {
             margin-top: 50px;
+            font-family: Arial, sans-serif;
+            text-align: center;
         }
 
         .btn-reserver {
@@ -40,6 +44,7 @@ if ($vehicule !== null) {
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
 
         .btn-reserver:hover {
@@ -49,20 +54,20 @@ if ($vehicule !== null) {
 </head>
 <body>
     <div class="container">
-        <?php if ($vehicule): ?>
-            <h2>Réservez votre véhicule</h2>
-            <p><strong>Marque :</strong> <?= htmlspecialchars($vehicule->getMarque()) ?></p>
-            <p><strong>Immatriculation :</strong> <?= htmlspecialchars($vehicule->getImmatriculation()) ?></p>
-            <p><strong>Type :</strong> <?= htmlspecialchars($vehicule->getType()) ?></p>
-            <p><strong>Prix par jour :</strong> <?= htmlspecialchars($vehicule->getPrixParJour()) ?>€</p>
+        <h2>Réservez votre véhicule</h2>
+        <p><strong>Marque :</strong> <?= htmlspecialchars($vehicule['marque']) ?></p>
+        <p><strong>Immatriculation :</strong> <?= htmlspecialchars($vehicule['immatriculation']) ?></p>
+        <p><strong>Type :</strong> <?= htmlspecialchars($vehicule['type']) ?></p>
+        <p><strong>Prix par jour :</strong> <?= htmlspecialchars($vehicule['prix_par_jour']) ?> €</p>
 
-            <!-- Formulaire pour confirmer la réservation -->
+        <!-- Formulaire pour confirmer la réservation -->
+        <?php if ($vehicule['disponibilite']): ?>
             <form action="confirmer_reservation.php" method="post">
-                <input type="hidden" name="immatriculation" value="<?= $vehicule->getImmatriculation() ?>">
+                <input type="hidden" name="id" value="<?= htmlspecialchars($vehicule['id']) ?>">
                 <button type="submit" class="btn-reserver">Confirmer la Réservation</button>
             </form>
         <?php else: ?>
-            <p>Véhicule non trouvé. Assurez-vous que l'immatriculation soit correcte.</p>
+            <p>Ce véhicule est actuellement indisponible.</p>
         <?php endif; ?>
     </div>
 </body>

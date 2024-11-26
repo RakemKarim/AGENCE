@@ -1,70 +1,120 @@
-<?php 
-ob_start(); 
+<?php
+ob_start();
 include "header.php"; 
+include "../classes/Utilisateur.php"; 
+include "../controller/Db.php"; 
+
+if (isset($_POST['signup'])) {
+    $prenom = htmlspecialchars($_POST['prenom'] ?? '');
+    $login = htmlspecialchars($_POST['login'] ?? '');
+    $mdp = $_POST['mdp'] ?? '';
+    $role = htmlspecialchars($_POST['role'] ?? 'client'); // Récupérer le rôle choisi
+
+    try {
+        // Créer un nouvel utilisateur et l'enregistrer dans la base de données
+        $utilisateur = new Utilisateur($prenom, $login, $mdp, $role); // Le rôle est maintenant dynamique
+        $utilisateur->enregistrer(); // Insère l'utilisateur dans la base de données
+
+        echo "<p class='text-center text-success'>Inscription réussie pour $prenom avec le rôle $role.</p>";
+    } catch (Exception $e) {
+        // Gérer l'erreur si le login est déjà utilisé
+        echo "<p class='text-center text-danger'>Erreur: " . $e->getMessage() . "</p>";
+    }
+}
+
+if (isset($_POST['signin_client']) || isset($_POST['signin_gerant'])) {
+    $login = htmlspecialchars($_POST['login'] ?? '');
+    $mdp = $_POST['mdp'] ?? '';
+
+    // Connexion à la base de données et récupération de l'utilisateur
+    try {
+        $db = new Db();
+        $utilisateur = $db->getUtilisateurByLogin($login); // Méthode pour récupérer l'utilisateur par login
+
+        if ($utilisateur) {
+            // Vérification du mot de passe
+            if (password_verify($mdp, $utilisateur['mot_de_passe'])) {
+                session_start();
+                $_SESSION['login'] = $utilisateur['login'];
+                $_SESSION['role'] = $utilisateur['role'];
+
+                // Redirection en fonction du rôle
+                if ($utilisateur['role'] == 'client') {
+                    header("Location: vehicules.php");
+                    exit();
+                } elseif ($utilisateur['role'] == 'gerant') {
+                    header("Location: gerant.php");
+                    exit();
+                }
+            } else {
+                echo "<p class='text-center text-danger'>Mot de passe incorrect.</p>";
+            }
+        } else {
+            echo "<p class='text-center text-danger'>Utilisateur non trouvé.</p>";
+        }
+    } catch (Exception $e) {
+        echo "<p class='text-center text-danger'>Erreur: " . $e->getMessage() . "</p>";
+    }
+}
 ?>
 
 <h2 class="text-center">Inscription / Connexion</h2>
 
 <div class="row">
-    <div class="col-6">
-        <h2 class="text-center">Inscription</h2>
+    <div class="col-md-6">
+        <h3 class="text-center">Inscription</h3>
         <form action="" method="post">
-            <div class="form-group col-6">
+            <div class="form-group">
                 <label for="prenom">Prénom <span class="text-danger">*</span></label>
-                <input type="text" name="prenom" class="form-control" id="prenom">
+                <input type="text" name="prenom" class="form-control" id="prenom" required>
             </div>
 
-            <div class="form-group col-6">
-                <label for="login">Login</label>
-                <input type="text" name="login" class="form-control" id="login">
+            <div class="form-group">
+                <label for="login">Login <span class="text-danger">*</span></label>
+                <input type="text" name="login" class="form-control" id="login" required>
             </div>
             
-            <div class="form-group col-6">
-                <label for="mdp">Mot de passe</label>
-                <input type="password" name="mdp" class="form-control" id="mdp">
+            <div class="form-group">
+                <label for="mdp">Mot de passe <span class="text-danger">*</span></label>
+                <input type="password" name="mdp" class="form-control" id="mdp" required>
             </div>
 
-            <input type="submit" class="btn btn-outline-success mt-2" name="signup" value="Sign Up">
+            <!-- Champ pour choisir le rôle -->
+            <div class="form-group">
+                <label for="role">Rôle <span class="text-danger">*</span></label>
+                <select name="role" class="form-control" id="role" required>
+                    <option value="client">Client</option>
+                    <option value="gerant">Gérant</option>
+                </select>
+            </div>
+
+            <input type="submit" class="btn btn-success mt-2" name="signup" value="S'inscrire">
         </form>
     </div>
 
-    <div class="col-6">
-        <h2 class="text-center">Connexion</h2>
+    <div class="col-md-6">
+        <h3 class="text-center">Connexion</h3>
         <form action="" method="post">
-            <div class="form-group col-6">
+            <div class="form-group">
                 <label for="login_connexion">Login</label>
-                <input type="text" name="login" class="form-control" id="login_connexion">
+                <input type="text" name="login" class="form-control" id="login_connexion" required>
             </div>
 
-            <div class="form-group col-6">
+            <div class="form-group">
                 <label for="mdp_connexion">Mot de passe</label>
-                <input type="password" name="mdp" class="form-control" id="mdp_connexion">
+                <input type="password" name="mdp" class="form-control" id="mdp_connexion" required>
             </div>
 
-            <input type="submit" class="btn btn-outline-success mt-2" name="signin" value="Sign in">
+            <!-- Boutons pour la connexion -->
+            <div class="d-flex justify-content-between mt-3">
+                <button type="submit" name="signin_client" class="btn btn-primary">Connexion Client</button>
+                <button type="submit" name="signin_gerant" class="btn btn-warning">Connexion Gérant</button>
+            </div>
         </form>
     </div>
 </div>
 
 <?php 
-// Traitement des formulaires si les boutons sont soumis
-if (isset($_POST['signup'])) {
-    $prenom = $_POST['prenom'] ?? '';
-    $login = $_POST['login'] ?? '';
-    $mdp = $_POST['mdp'] ?? '';
-    
-    // Validation et traitement de l'inscription ici
-    echo "Inscription: $prenom, $login, $mdp";
-}
-
-if (isset($_POST['signin'])) {
-    $login = $_POST['login'] ?? '';
-    $mdp = $_POST['mdp'] ?? '';
-    
-    // Validation et traitement de la connexion ici
-    echo "Connexion: $login, $mdp";
-}
-
 $contenu = ob_get_clean();
 echo $contenu;
 ?>

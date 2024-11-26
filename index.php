@@ -2,7 +2,7 @@
 session_start();  // Démarrer la session pour accéder aux données utilisateur
 
 // Inclure les fichiers nécessaires pour l'affichage de l'en-tête
-include "classes/Client.php";
+include "classes/Utilisateur.php";
 include "classes/GestionVehicules.php";
 include "classes/Vehicules.php";
 include "vue/header.php";
