@@ -13,7 +13,7 @@ class Vehicules{
         $this->immatriculation = $immatriculation;
         $this->marque = $marque;
         $this->type = $type;
-        $this->disponibilite = true; // Par défaut, le véhicule est disponible    }
+        $this->disponibilite = true; 
     
     }
  
@@ -45,4 +45,7 @@ class Vehicules{
         $this->disponibilite = $statut;
     }
 
+    public function getVehiculs($immatriculation){
+        
+    }
 }

@@ -1,34 +1,38 @@
 <?php
 session_start();
 include "header.php"; 
-include "../classes/GestionVehicules.php"; // Classe pour gérer les véhicules
-
-// Vérifier si l'utilisateur est un gérant
+include "../classes/GestionVehicules.php"; 
+include "../classes/Vehicules.php"; 
+include "../classes/Reservation.php"; 
+include "../controller/Db.php"; 
 if ($_SESSION['role'] != 'gerant') {
     header("Location: login.php");
     exit();
 }
 
-$gestionVehicules = new GestionVehicules();
+$db = new Db();  
 
-// Ajouter un véhicule
+$gestionVehicules = new GestionVehicules($db); 
+
 if (isset($_POST['add_vehicule'])) {
     $marque = htmlspecialchars($_POST['marque']);
     $immatriculation = htmlspecialchars($_POST['immatriculation']);
     $type = htmlspecialchars($_POST['type']);
-    $prix_par_jour = $_POST['prix_par_jour'];
+    $prix_par_jour = (float) $_POST['prix_par_jour'];
     
-    $gestionVehicules->ajouterVehicule($marque, $immatriculation, $type, $prix_par_jour);
+    $vehicule = new Vehicules($marque, $immatriculation, $type, $prix_par_jour);
+    
+    $gestionVehicules->ajouterVehicule($vehicule);
     echo "<p class='text-success'>Véhicule ajouté avec succès!</p>";
 }
 
-// Afficher les véhicules réservés
 $vehiculesReserves = $gestionVehicules->getVehiculesReserves();
+
 ?>
 
 <h2 class="text-center">Page du Gérant</h2>
 
-<!-- Formulaire pour ajouter un véhicule -->
+
 <div class="col-md-6">
     <h3 class="text-center">Ajouter un véhicule</h3>
     <form action="" method="post">
@@ -49,17 +53,16 @@ $vehiculesReserves = $gestionVehicules->getVehiculesReserves();
 
         <div class="form-group">
             <label for="prix_par_jour">Prix par jour</label>
-            <input type="number" name="prix_par_jour" class="form-control" required>
+            <input type="number" step="0.01" name="prix_par_jour" class="form-control" required>
         </div>
 
         <button type="submit" class="btn btn-success mt-2" name="add_vehicule">Ajouter</button>
     </form>
 </div>
 
-<!-- Affichage des véhicules réservés -->
-<h3>Véhicules réservés</h3>
+<h3>Véhicules reservés</h3>
 <?php
-if ($vehiculesReserves) {
+if (!empty($vehiculesReserves)) {
     echo "<table class='table'>
             <thead>
                 <tr>
@@ -73,14 +76,17 @@ if ($vehiculesReserves) {
             </thead>
             <tbody>";
     
-    foreach ($vehiculesReserves as $vehicule) {
+    foreach ($vehiculesReserves as $reservation) {
+        $vehicule = $reservation['vehicule'];
+        $utilisateur = $reservation['utilisateur'];
+        
         echo "<tr>
-                <td>{$vehicule['marque']}</td>
-                <td>{$vehicule['immatriculation']}</td>
-                <td>{$vehicule['type']}</td>
-                <td>{$vehicule['prix_par_jour']} €</td>
-                <td>{$vehicule['prenom']} {$vehicule['nom']}</td>
-                <td>Du {$vehicule['date_debut']} au {$vehicule['date_fin']}</td>
+                <td>{$vehicule->getMarque()}</td>
+                <td>{$vehicule->getImmatriculation()}</td>
+                <td>{$vehicule->getType()}</td>
+                <td>{$vehicule->getPrixParJour()} €</td>
+                <td>{$utilisateur['prenom']} {$utilisateur['nom']}</td>
+                <td>Du {$reservation['dateDebut']} au {$reservation['dateFin']}</td>
               </tr>";
     }
     

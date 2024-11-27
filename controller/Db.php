@@ -18,12 +18,12 @@ class Db {
         }
     }
 
-    // Méthode pour obtenir l'objet PDO
+   
     public function getPdo() {
         return $this->pdo;
     }
 
-    // Méthode pour récupérer un utilisateur par login
+  
     public function getUtilisateurByLogin($login) {
         $query = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE login = :login");
         $query->execute(['login' => $login]);

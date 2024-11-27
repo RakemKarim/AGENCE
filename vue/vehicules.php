@@ -2,9 +2,10 @@
 <?php
 
 include_once "../controller/Db.php"; 
+$db = new Db();
+$pdo = $db->getPdo();
 
 try {
-    
     $stmt = $pdo->query("SELECT * FROM vehicules");
     $listeVehicules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -36,8 +37,8 @@ try {
                     </td>
                     <td>
                         <?php if ($vehicule['disponibilite']): ?>
-                            <form action="reservation.php" method="post">
-                                <input type="hidden" name="id" value="<?= htmlspecialchars($vehicule['id']) ?>">
+                            <form action="reservation.php" method="get">
+                                <input type="hidden" name="immatriculation" value="<?= htmlspecialchars($vehicule['immatriculation']) ?>">
                                 <button type="submit" class="btn btn-primary">Réserver</button>
                             </form>
                         <?php else: ?>

@@ -1,25 +1,56 @@
 <?php
-// Inclure la connexion à la base de données
-include_once "controller/db.php";
+include_once "../controller/Db.php"; 
+$db = new Db();
+$pdo = $db->getPdo();
 
-// Récupérer l'immatriculation depuis la requête GET
-$immatriculation = isset($_GET['immatriculation']) ? $_GET['immatriculation'] : null;
+if (isset($_GET['immatriculation'])) {
+    $immatriculation = $_GET['immatriculation'];
 
-if (!$immatriculation) {
-    die("Immatriculation manquante.");
+    // Récupérer apres ajoute faire apres ..
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM vehicules WHERE immatriculation = ?");
+        $stmt->execute([$immatriculation]);
+        $vehicule = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        
+        if (!$vehicule) {
+            die("Véhicule non trouvé.");
+        }
+    } catch (PDOException $e) {
+        die("Erreur lors de la récupération du véhicule : " . $e->getMessage());
+    }
+} else {
+    die("Aucune immatriculation fournie.");
 }
 
-// Récupérer les informations du véhicule correspondant dans la base de données
-try {
-    $stmt = $pdo->prepare("SELECT * FROM vehicules WHERE immatriculation = ?");
-    $stmt->execute([$immatriculation]);
-    $vehicule = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$vehicule) {
-        die("Véhicule non trouvé.");
+$reservationMessage = "";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $jours = $_POST['jours'];
+
+    
+    $prixTotal = $vehicule['prix_par_jour'] * $jours;
+
+   
+    if ($vehicule['disponibilite'] == 1) {
+        try {
+            $stmt = $pdo->prepare("INSERT INTO reservations (vehicule_id, immatriculation, jours, date_reservation, prix_total) VALUES (?, ?, ?, NOW(), ?)");
+            $stmt->execute([$vehicule['id'], $immatriculation, $jours, $prixTotal]);
+
+            // il ne mis pas ajour a verfier ??
+            $stmt = $pdo->prepare("UPDATE vehicules SET disponibilite = 0 WHERE immatriculation = ?");
+            $stmt->execute([$immatriculation]);
+
+            
+            header("Location: confirmation.php?message=Votre réservation du véhicule avec l'immatriculation $immatriculation pour $jours jour(s) a été confirmée. Le prix total est de $prixTotal €.");
+            exit();
+        } catch (PDOException $e) {
+            
+            $reservationMessage = "Erreur lors de la réservation : " . $e->getMessage();
+        }
+    } else {
+        $reservationMessage = "Désolé, ce véhicule n'est plus disponible.";
     }
-} catch (PDOException $e) {
-    die("Erreur lors de la récupération du véhicule : " . $e->getMessage());
 }
 ?>
 
@@ -28,47 +59,48 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Réservation de Véhicule</title>
-    <style>
-        /* Style pour la page de réservation */
-        .container {
-            margin-top: 50px;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-
-        .btn-reserver {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .btn-reserver:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <title>Réservation du Véhicule</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <h2>Réservez votre véhicule</h2>
-        <p><strong>Marque :</strong> <?= htmlspecialchars($vehicule['marque']) ?></p>
-        <p><strong>Immatriculation :</strong> <?= htmlspecialchars($vehicule['immatriculation']) ?></p>
-        <p><strong>Type :</strong> <?= htmlspecialchars($vehicule['type']) ?></p>
-        <p><strong>Prix par jour :</strong> <?= htmlspecialchars($vehicule['prix_par_jour']) ?> €</p>
 
-        <!-- Formulaire pour confirmer la réservation -->
-        <?php if ($vehicule['disponibilite']): ?>
-            <form action="confirmer_reservation.php" method="post">
-                <input type="hidden" name="id" value="<?= htmlspecialchars($vehicule['id']) ?>">
-                <button type="submit" class="btn-reserver">Confirmer la Réservation</button>
-            </form>
-        <?php else: ?>
-            <p>Ce véhicule est actuellement indisponible.</p>
-        <?php endif; ?>
+<div class="container mt-5">
+    <h2 class="text-center">Réservation du Véhicule</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <h4>Véhicule sélectionné :</h4>
+            <table class="table">
+                <tr>
+                    <th>Marque</th>
+                    <td><?= htmlspecialchars($vehicule['marque']) ?></td>
+                </tr>
+                <tr>
+                    <th>Immatriculation</th>
+                    <td><?= htmlspecialchars($vehicule['immatriculation']) ?></td>
+                </tr>
+                <tr>
+                    <th>Type</th>
+                    <td><?= htmlspecialchars($vehicule['type']) ?></td>
+                </tr>
+                <tr>
+                    <th>Prix par jour (€)</th>
+                    <td><?= htmlspecialchars($vehicule['prix_par_jour']) ?> €</td>
+                </tr>
+            </table>
+
+            <h4>Choisir la durée de la réservation :</h4>
+            <form action="confirmation.php" method="post">
+    <input type="hidden" name="immatriculation" value="<?= htmlspecialchars($vehicule['immatriculation']) ?>">
+    <label for="jours">Nombre de jours :</label>
+    <input type="number" id="jours" name="jours" min="1" required class="form-control mb-3">
+    <button type="submit" class="btn btn-primary">Confirmer la réservation</button>
+</form>
+        </div>
     </div>
+</div>
+
+
+
 </body>
 </html>

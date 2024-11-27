@@ -1,18 +1,15 @@
 <?php
-// Démarrer la session si nécessaire
+
 session_start();
 
-// Inclure l'en-tête
 include "header.php";
 
-// Vérifier si l'utilisateur est déjà connecté
 if (isset($_SESSION['user_id'])) {
-    header("Location: index.php");  // Si l'utilisateur est déjà connecté, le rediriger vers la page d'accueil
+    header("Location: index.php"); 
     exit;
 }
 ?>
 
-<!-- Formulaire d'inscription -->
 <div class="container my-5">
     <h2>Inscription</h2>
     <p>Veuillez remplir les informations ci-dessous pour créer un compte.</p>
@@ -37,19 +34,16 @@ if (isset($_SESSION['user_id'])) {
         <button type="submit" class="btn btn-primary">S'inscrire</button>
     </form>
 
-    <p class="mt-3">Vous avez déjà un compte ? <a href="login.php">Connectez-vous ici</a>.</p>
+    <p class="mt-3">Vous avez déjà un compte ? <a href="connexion.php">Connectez-vous ici</a>.</p>
 </div>
 
 <?php
-// Traiter les données du formulaire après soumission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Récupérer les données du formulaire
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
-    // Vérification des mots de passe
     if ($password != $confirm_password) {
         echo "<div class='alert alert-danger'>Les mots de passe ne correspondent pas.</div>";
     } 
@@ -57,6 +51,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 ?>
 
 <?php
-// Inclure le pied de page
 include "footer.php";
 ?>

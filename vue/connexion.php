@@ -8,16 +8,15 @@ if (isset($_POST['signup'])) {
     $prenom = htmlspecialchars($_POST['prenom'] ?? '');
     $login = htmlspecialchars($_POST['login'] ?? '');
     $mdp = $_POST['mdp'] ?? '';
-    $role = htmlspecialchars($_POST['role'] ?? 'client'); // Récupérer le rôle choisi
+    $role = htmlspecialchars($_POST['role'] ?? 'client'); 
 
     try {
-        // Créer un nouvel utilisateur et l'enregistrer dans la base de données
-        $utilisateur = new Utilisateur($prenom, $login, $mdp, $role); // Le rôle est maintenant dynamique
-        $utilisateur->enregistrer(); // Insère l'utilisateur dans la base de données
+        
+        $utilisateur = new Utilisateur($prenom, $login, $mdp, $role); 
+        $utilisateur->enregistrer(); 
 
         echo "<p class='text-center text-success'>Inscription réussie pour $prenom avec le rôle $role.</p>";
     } catch (Exception $e) {
-        // Gérer l'erreur si le login est déjà utilisé
         echo "<p class='text-center text-danger'>Erreur: " . $e->getMessage() . "</p>";
     }
 }
@@ -25,20 +24,17 @@ if (isset($_POST['signup'])) {
 if (isset($_POST['signin_client']) || isset($_POST['signin_gerant'])) {
     $login = htmlspecialchars($_POST['login'] ?? '');
     $mdp = $_POST['mdp'] ?? '';
-
-    // Connexion à la base de données et récupération de l'utilisateur
-    try {
+ try {
         $db = new Db();
         $utilisateur = $db->getUtilisateurByLogin($login); // Méthode pour récupérer l'utilisateur par login
 
         if ($utilisateur) {
-            // Vérification du mot de passe
+            // Vérification du mot d passe
             if (password_verify($mdp, $utilisateur['mot_de_passe'])) {
                 session_start();
                 $_SESSION['login'] = $utilisateur['login'];
                 $_SESSION['role'] = $utilisateur['role'];
 
-                // Redirection en fonction du rôle
                 if ($utilisateur['role'] == 'client') {
                     header("Location: vehicules.php");
                     exit();
@@ -47,10 +43,10 @@ if (isset($_POST['signin_client']) || isset($_POST['signin_gerant'])) {
                     exit();
                 }
             } else {
-                echo "<p class='text-center text-danger'>Mot de passe incorrect.</p>";
+                echo "<p class='text-center text-danger'>Mot de pass incorrect.</p>";
             }
         } else {
-            echo "<p class='text-center text-danger'>Utilisateur non trouvé.</p>";
+            echo "<p class='text-center text-danger'>Utilisateur non trouve.</p>";
         }
     } catch (Exception $e) {
         echo "<p class='text-center text-danger'>Erreur: " . $e->getMessage() . "</p>";
@@ -79,7 +75,7 @@ if (isset($_POST['signin_client']) || isset($_POST['signin_gerant'])) {
                 <input type="password" name="mdp" class="form-control" id="mdp" required>
             </div>
 
-            <!-- Champ pour choisir le rôle -->
+        
             <div class="form-group">
                 <label for="role">Rôle <span class="text-danger">*</span></label>
                 <select name="role" class="form-control" id="role" required>
@@ -105,7 +101,7 @@ if (isset($_POST['signin_client']) || isset($_POST['signin_gerant'])) {
                 <input type="password" name="mdp" class="form-control" id="mdp_connexion" required>
             </div>
 
-            <!-- Boutons pour la connexion -->
+           
             <div class="d-flex justify-content-between mt-3">
                 <button type="submit" name="signin_client" class="btn btn-primary">Connexion Client</button>
                 <button type="submit" name="signin_gerant" class="btn btn-warning">Connexion Gérant</button>
